@@ -1,190 +1,306 @@
-# URDF Exporter for Fusion 360
+# URDF Exporter para Fusion 360
 
-This is a **fork** of the original [syuntoku14/fusion2urdf](https://github.com/syuntoku14/fusion2urdf) repository. 
+Este es un **fork** del repositorio original: https://github.com/syuntoku14/fusion2urdf
 
-## **Changes Made**
-- **Python 3.12 Compatibility**: Replaced the deprecated `distutils.dir_util` with `shutil` for directory operations, ensuring compatibility with **Python 3.12** used by Fusion 360.
-- **Error Handling**: Improved error handling to prevent `FileExistsError` when copying directories if they already exist.
-- **Directory Operations**: All directory copying is now done using `shutil.copytree`.
+## **Cambios realizados**
 
-## **Notes**
-- The script is updated for use with **Python 3.12**, as Fusion 360 no longer supports `distutils` in versions above Python 3.10.
+* **Compatibilidad con Python 3.12**: Se reemplazó el módulo obsoleto `distutils.dir_util` por `shutil` para las operaciones con directorios, asegurando la compatibilidad con **Python 3.12**, utilizado por Fusion 360.
+* **Manejo de errores**: Se mejoró el manejo de errores para evitar `FileExistsError` al copiar directorios que ya existen.
+* **Operaciones con directorios**: Toda la copia de directorios ahora se realiza utilizando `shutil.copytree`.
+
+## **Notas**
+
+* El script está actualizado para utilizarse con **Python 3.12**, ya que Fusion 360 dejó de admitir `distutils` en versiones superiores a Python 3.10.
 
 ---
 
+## ¡Actualizado!
 
+### 2021/01/09: Corrección del cálculo de xyz
 
-## Updated!!!
-* 2021/01/09: Fix xyz calculation. 
-  * If you see that your components move arround the map center in rviz try this update 
-  * More Infos see: https://forums.autodesk.com/t5/fusion-360-api-and-scripts/difference-of-geometryororiginone-and-geometryororiginonetwo/m-p/9837767
+* Si observas que tus componentes se desplazan alrededor del centro del mapa en RViz, prueba esta actualización.
+* Para obtener más información, consulta:
+  https://forums.autodesk.com/t5/fusion-360-api-and-scripts/difference-of-geometryororiginone-and-geometryororiginonetwo/m-p/9837767
 
-* 2020/11/10: README fix
-  * MacOS Installation command fixed in README
-  * Date format unified in README to yyyy/dd/mm
-  * Shifted Installation Upwards for better User Experience and easier to find
-* 2020/01/04: Multiple updates:
-  * no longer a need to run a bash script to convert stls
-  * some cleanup around joint and transmission generation
-  * defines a sample material tag instead of defining a material in each link
-  * fusion2urdf now generates a self-contained ROS {robot_name}_description package
-  * now launched by roslaunch {robot_name}_description display.launch
-  * changed fusion2urdf output from urdf to xacro for more flexibility
-  * separate out material, transmissions, gazebo elements to separate files
-* 2018/20/10: Fixed functions to generate launch files
-* 2018/25/09: Supports joint types "Rigid", "Slider" & Supports the joints' limit(for "Revolute" and "Slider"). 
-* 2018/19/09: Fixed the bugs about the center of the mass and the inertia.
+### 2020/11/10: Correcciones del README
 
+* Se corrigió el comando de instalación para MacOS en el README.
+* Se unificó el formato de fecha en el README a `yyyy/dd/mm`.
+* Se movió la sección de instalación hacia arriba para mejorar la experiencia del usuario y facilitar su localización.
 
-## Installation
+### 2020/01/04: Múltiples actualizaciones
 
-Run the following command in your shell.
+* Ya no es necesario ejecutar un script de Bash para convertir los archivos STL.
+* Se realizaron algunas mejoras en la generación de joints y transmisiones.
+* Se define una etiqueta de material de ejemplo en lugar de definir un material en cada link.
+* `fusion2urdf` ahora genera un paquete ROS `{robot_name}_description` independiente y autocontenido.
+* Ahora se inicia mediante:
+  `roslaunch {robot_name}_description display.launch`
+* Se cambió la salida de `fusion2urdf` de URDF a Xacro para proporcionar mayor flexibilidad.
+* Los materiales, las transmisiones y los elementos de Gazebo se separaron en archivos independientes.
 
-##### Windows (In PowerShell)
+### 2018/20/10: Corrección de funciones
+
+* Se corrigieron las funciones encargadas de generar los archivos `launch`.
+
+### 2018/25/09: Soporte para tipos de joints
+
+* Se añadieron los tipos de joint **"Rigid"** y **"Slider"**.
+* Se añadió soporte para los límites de los joints de tipo **"Revolute"** y **"Slider"**.
+
+### 2018/19/09: Correcciones
+
+* Se corrigieron errores relacionados con el centro de masa y la inercia.
+
+---
+
+# Instalación
+
+Ejecuta el siguiente comando en tu terminal.
+
+### Windows (PowerShell)
 
 ```powershell
 cd <path to fusion2urdf>
 Copy-Item ".\URDF_Exporter\" -Destination "${env:APPDATA}\Autodesk\Autodesk Fusion 360\API\Scripts\" -Recurse
 ```
 
-##### macOS (In bash or zsh)
+### macOS (Bash o Zsh)
 
 ```bash
 cd <path to fusion2urdf>
 cp -r ./URDF_Exporter "$HOME/Library/Application Support/Autodesk/Autodesk Fusion 360/API/Scripts/"
 ```
 
-## What is this script?
-This is a fusion 360 script to export urdf from fusion 360 directly.
+---
 
-This exports:
-* .urdf file of your model
-* .launch and .yaml files to simulate your robot on gazebo
-* .stl files of your model
+# ¿Qué es este script?
 
-### Sample 
+Este es un script para Fusion 360 que permite exportar directamente un modelo de Fusion 360 a URDF.
 
-The following test model doesn't stand upright because the z axis is not upright in default fusion 360.
-Make sure z axis is upright in your fusion 360 model if you want. 
+El script exporta:
 
-#### original model
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/industrial_robot.png" alt="industrial_robot" title="industrial_robot" width="300" height="300">
+* Un archivo `.urdf` del modelo.
+* Archivos `.launch` y `.yaml` para simular el robot en Gazebo.
+* Archivos `.stl` del modelo.
 
-#### Gazebo simulation of exported .urdf and .launch
-* center of mass
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/center_of_mass.png" alt="center_of_mass" title="center_of_mass" width="300" height="300">
+## Ejemplo
 
-* collision
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/collision.png" alt="collision" title="collision" width="300" height="300">
+El siguiente modelo de prueba no queda orientado verticalmente porque el eje Z no está orientado hacia arriba en Fusion 360 de forma predeterminada.
 
-* inertia
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/inertia.png" alt="inertia" title="inertia" width="300" height="300">
+Si quieres que el robot quede correctamente orientado, asegúrate de que el eje Z esté orientado hacia arriba en tu modelo de Fusion 360.
 
+### Modelo original
 
-## Before using this script
+[Imagen del modelo industrial]
 
-Before using this script, make sure that your model has all the "links" as components. You have to define the links by creating corresiponding components. For example, this model(https://grabcad.com/library/spotmini-robot-1) is not supported unless you define the "base_link". 
+### Simulación en Gazebo del `.urdf` y `.launch` exportados
 
-In addition to that, you should be careful when define your joints. The **parent links** should be set as **Component2** when you define the joint, not as Component1. For example, if you define the "base_link" as Component1 when you define the joints, an error saying "KeyError: base_link__1" will show up.
+* Centro de masa.
+* Colisiones.
+* Inercia.
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/spot_mini.PNG" alt="spot_mini" title="spot_mini" width="300" height="300">
+---
 
-Also, make sure components of your model has only bodies. **Nested components are not supported**.
-For example, this works:
+# Antes de utilizar este script
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/only_bodies.PNG" alt="only_bodies" title="only_bodies" width="300" height="300">
+Antes de utilizar este script, asegúrate de que todos los **"links" estén definidos como componentes**.
 
-but this doesn't work since the "face (3):1" component contains other components. A component must contain only bodies:
+Debes definir los links creando los componentes correspondientes. Por ejemplo, el modelo de [SpotMini](https://grabcad.com/library/spotmini-robot-1) no es compatible a menos que definas el `base_link`.
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/nest_components.PNG" alt="nest_components" title="nest_components" width="300" height="300">
+Además, debes tener cuidado al definir los joints.
 
-Sometimes this script exports abnormal urdf without any error messages. In that case, the joints should have problems. Redefine the joints and run again.
+Los **links padre (`parent links`) deben configurarse como `Component2` al definir el joint, y no como `Component1`**.
 
-In addition to that, make sure that this script currently supports only "Rigid", "Slider" and "Revolute".
+Por ejemplo, si defines `base_link` como `Component1` al crear los joints, aparecerá un error como:
 
+```text
+KeyError: base_link__1
+```
 
-## Complex Kinematic Loops and Spherical joints (may be fixed later):
+También asegúrate de que los componentes de tu modelo contengan **únicamente cuerpos (`bodies`)**.
 
-DO NOT use Fusion 360's inbuilt joint editor dialouge for positioning joints
+Los **componentes anidados (`Nested components`) no son compatibles**.
 
-For example, [@rohit-kumar-j](https://github.com/rohit-kumar-j) had this complicated robot to assemble. There are over.. some 50 joints in all, including some forming loops within the structure like a [4-bar mechanism](https://www.youtube.com/watch?v=eYOt6SEKHFs&ab_channel=YuhangHu), also called **kinematic loops**.
+### Esto funciona:
 
-![image](https://user-images.githubusercontent.com/37873142/133144979-30218496-09d4-40bb-9af7-95448a7665ee.png)
+Un componente que contiene únicamente cuerpos.
 
-As you can see below, when fusion initailly forms joints, it might not align where you want it to align to. In the image below, the cylinder's cap side doesn't exaclty coincide with the position of the pin where it needs to be join. The red arrow shows the mismatch in initial joint positioning by fusion.
+### Esto no funciona:
 
-![image](https://user-images.githubusercontent.com/37873142/133145309-298f17a4-bd62-48fa-b1c2-54f58e26fce4.png)
+Un componente que contiene otros componentes.
 
-If you were to manually drag the parts and align them as shown below, it would cause cascading problems with the visual and collision properties of certain links. 
+Por ejemplo, si el componente `"face (3):1"` contiene otros componentes, no funcionará.
 
-![Capture](https://user-images.githubusercontent.com/37873142/133146628-c4c2b8dd-ac7b-41e8-bd62-1d2c2b80adce.PNG)
+**Cada componente debe contener únicamente cuerpos.**
 
-Below you can see one of the cylinders is mismatched as compared to the others (red and grey colors are cylinders) 
-(The below urdf is visualized in pybullet)
+En algunas ocasiones, este script puede generar un URDF anormal sin mostrar ningún mensaje de error.
 
-![image](https://user-images.githubusercontent.com/37873142/133141659-440a0a4a-1afa-4751-99ba-fc3db02f7450.png)
+En ese caso, probablemente exista un problema con los joints. Vuelve a definir los joints y ejecuta nuevamente el script.
 
-See Also: Similar to this issue, but only for a few axes [here](https://github.com/yanshil/Fusion2PyBullet/issues/6) (turns out there was a fusion API change back then, and the exporter wasn't yet updated [See this commit](https://github.com/syuntoku14/fusion2urdf/commit/8786e6318cdcaaf32070148451a27ab6e4f6697d), but it now is)
+Además, ten en cuenta que actualmente este script solo admite los siguientes tipos de joint:
 
+* `Rigid`
+* `Slider`
+* `Revolute`
 
-**The fix for this is to leave Fusion's joint controls unedited and form joints for the robot joints (See below)**
+---
 
+# Bucles cinemáticos complejos y joints esféricos
 
-A similar issue with another set of joints at the ankle was fixed by following the above fromat. [Here is the video](https://www.youtube.com/watch?v=0hfkm7vv5o8&ab_channel=JRohit)
+## ⚠️ NO utilices el editor de joints integrado de Fusion 360 para posicionar los joints
 
-For spherical joints, it is better to keep them revolute and define the joints as spherical, later in the generated URDF(provided the urdf parser in your visualizer/physics engine(gazebo,webots,pybullet,mujoco,etc) supports spherical joints, in pybullet it does).
-The ankle joint below has 4 spherical joints and only two of them were defined as revolute while exporting from fusion 360. The other 2 spherical joints were created in pybullet using pybullet's inbuilt functions for creating kinematic loops.(see the gif below)
+Por ejemplo, [@rohit-kumar-j](https://github.com/rohit-kumar-j) tenía que ensamblar un robot complejo con más de 50 joints, incluyendo algunos que formaban bucles dentro de la estructura, como un mecanismo de cuatro barras, también conocido como **bucle cinemático (`kinematic loop`)**.
 
-![youtube-video-gif](https://user-images.githubusercontent.com/37873142/133144404-45d9e444-8ddb-4b5f-8970-6e637b750faa.gif)
+Cuando Fusion 360 crea inicialmente los joints, es posible que estos no queden alineados exactamente donde deseas.
 
+Por ejemplo, en la imagen original, la tapa del cilindro no coincide exactamente con la posición del pasador donde debe realizarse la unión. La flecha roja muestra la discrepancia en la posición inicial del joint realizada por Fusion 360.
 
-## In some cases, before export Turn off "Capture design history"
+Si arrastras manualmente las piezas y las alineas como corresponde, esto puede provocar problemas en cadena con las propiedades visuales y de colisión de determinados links.
 
-For preplanning the component placement when working/assembling your own robot. It is recomended to have separate names for components and save individual components in a separate folder, create a back up and, break link with the original. This folder can be later deleted after genearating the urdf. See [Issue #51](https://github.com/syuntoku14/fusion2urdf/issues/51) for problem with "copy-paste" vs "copy-paste new".
+A continuación se puede observar uno de los cilindros desalineado respecto de los demás.
 
+El URDF mostrado en el ejemplo fue visualizado en PyBullet.
 
+## Solución
 
-## How to use
+**La solución consiste en dejar sin modificar los controles de los joints de Fusion 360 y crear los joints correspondientes a los joints del robot**, como se muestra en el ejemplo.
 
-As an example, I'll export a urdf file from this cool fusion360 robot-arm model(https://grabcad.com/library/industrial-robot-10).
-This was created by [sanket patil](https://grabcad.com/sanket.patil-16)
+Un problema similar con otro conjunto de joints en el tobillo fue solucionado siguiendo este mismo procedimiento.
 
-### Install in Shell 
+Para obtener más información, se puede consultar el video indicado en el repositorio original.
 
-Run the [installation command](#installation) in your shell.
+---
 
-### Run in Fusion 360
+# Joints esféricos
 
-Click ADD-INS in fusion 360, then choose ****fusion2urdf****. 
+Para los joints esféricos, es preferible mantenerlos como joints `Revolute` durante la exportación y posteriormente definirlos como joints esféricos en el URDF generado.
 
-**This script will change your model. So before running it, copy your model to backup.**
+Esto depende de que el parser URDF del visualizador o motor de física utilizado sea compatible con joints esféricos.
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/copy.png" alt="copy" title="copy" width="300" height="300">
+Entre los motores mencionados se encuentran:
 
-Run the script and wait a few seconds(or a few minutes). Then a folder dialog will show up. Choose where you want to save the urdf (A folder "Desktop/test" is chosen in this example").
-Maybe some error will occur when you run the script. Fix them according to the instruction. In this case, something wrong with joint "Rev 7". Probably it can be solved by just redefining the joint.
+* Gazebo
+* Webots
+* PyBullet
+* MuJoCo
 
-![error](https://github.com/syuntoku14/fusion2urdf/blob/images/error.png)
+En el ejemplo del tobillo existen cuatro joints esféricos. Solo dos de ellos fueron definidos como `Revolute` durante la exportación desde Fusion 360.
 
-**You must define the base component**. Rename the base component as "base_link". 
+Los otros dos joints esféricos fueron creados posteriormente en PyBullet utilizando sus funciones integradas para crear bucles cinemáticos.
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/cautions.PNG" alt="cautions" title="cautions" width="300" height="300">
+---
 
-In the above image, base_link is grounded. Right-click it and click "Unground". 
+# En algunos casos, desactiva "Capture Design History" antes de exportar
 
-Now you can run the script. Let's run the script. Choose the folder to save and wait for a few seconds. You will see many "old_components" in the components field, please ignore them. 
+Para planificar previamente la posición de los componentes cuando estés trabajando o ensamblando tu propio robot, se recomienda:
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/result.PNG" alt="results" title="results" width="250" height="300">
+1. Utilizar nombres separados para los componentes.
+2. Guardar los componentes individuales en una carpeta independiente.
+3. Crear una copia de seguridad.
+4. Romper el vínculo (`Break Link`) con el original.
 
-You have successfully exported the urdf file. Also, you got `.stl` files in the "Desktop/test/mm_stl" repository. This will be required at the next step. The existing fusion CAD file is no more needed. You can delete it. 
+Esta carpeta puede eliminarse posteriormente después de generar el URDF.
 
-The folder "Desktop/test" will be required in the next step. Move them into your ros environment.
+Consulta el [Issue #51](https://github.com/syuntoku14/fusion2urdf/issues/51) para obtener información sobre problemas relacionados con `copy-paste` frente a `copy-paste new`.
 
+---
 
-#### In your ROS environment
+# Cómo utilizarlo
 
-Place the generated _description package directory in your own ROS workspace. "catkin_ws" is used in this example.
-Then, run catkin_make in catkin_ws.
+Como ejemplo, se exportará un archivo URDF a partir de este modelo de brazo robótico de Fusion 360:
+
+https://grabcad.com/library/industrial-robot-10
+
+El modelo fue creado por [Sanket Patil](https://grabcad.com/sanket.patil-16).
+
+## Instalación desde la terminal
+
+Ejecuta el [comando de instalación](#instalación) en tu terminal.
+
+---
+
+# Ejecutar en Fusion 360
+
+En Fusion 360, haz clic en:
+
+**ADD-INS → fusion2urdf**
+
+> **Este script modificará tu modelo. Por lo tanto, antes de ejecutarlo, crea una copia de seguridad de tu modelo.**
+
+Ejecuta el script y espera unos segundos (o unos minutos).
+
+Después aparecerá una ventana para seleccionar una carpeta.
+
+Selecciona dónde quieres guardar el URDF. En el ejemplo original se selecciona la carpeta:
+
+```text
+Desktop/test
+```
+
+Es posible que aparezca algún error al ejecutar el script. Corrígelo siguiendo las instrucciones indicadas.
+
+En el ejemplo original, había un problema con el joint `"Rev 7"`. Probablemente podía solucionarse simplemente redefiniendo el joint.
+
+---
+
+# Definir el `base_link`
+
+**Debes definir el componente base.**
+
+Renombra el componente base como:
+
+```text
+base_link
+```
+
+En el ejemplo, `base_link` aparece inicialmente como grounded.
+
+Haz clic derecho sobre él y selecciona:
+
+**Unground**
+
+Después de esto puedes ejecutar el script.
+
+Selecciona la carpeta donde deseas guardar los archivos y espera unos segundos.
+
+En el campo de componentes aparecerán muchos elementos llamados `"old_components"`. **Ignóralos.**
+
+Si todo funciona correctamente, habrás exportado exitosamente el URDF.
+
+También obtendrás los archivos `.stl` en la carpeta:
+
+```text
+Desktop/test/mm_stl
+```
+
+Estos archivos serán necesarios para el siguiente paso.
+
+El archivo CAD original de Fusion 360 ya no es necesario para continuar con el proceso y puede eliminarse si ya tienes una copia de seguridad.
+
+La carpeta:
+
+```text
+Desktop/test
+```
+
+será necesaria en el siguiente paso.
+
+Debes trasladarla a tu entorno ROS.
+
+---
+
+# En tu entorno ROS
+
+Coloca el directorio del paquete `_description` generado dentro de tu propio workspace de ROS.
+
+En el ejemplo se utiliza:
+
+```text
+catkin_ws
+```
+
+Luego ejecuta `catkin_make`:
 
 ```bash
 cd ~/catkin_ws/
@@ -192,26 +308,31 @@ catkin_make
 source devel/setup.bash
 ```
 
-Now you can see your robot in rviz. You can see it by the following command.
+Ahora podrás visualizar tu robot en RViz mediante:
 
 ```bash
 roslaunch (whatever your robot_name is)_description display.launch
 ```
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/rviz_robot.png" alt="rviz" title="rviz" width="300" height="300">
+Por ejemplo, si el nombre del robot fuera `robot_ejemplo`:
 
-If you want to simulate your robot on gazebo, just run
+```bash
+roslaunch robot_ejemplo_description display.launch
+```
+
+Si quieres simular tu robot en Gazebo, ejecuta:
+
 ```bash
 roslaunch (whatever your robot_name is)_description gazebo.launch
 ```
 
-**Enjoy your Fusion 360 and ROS life!**
+---
 
+# ¡Disfruta de tu experiencia con Fusion 360 y ROS!
 
+# Cita
 
-# Citation
-
-```
+```text
 @misc{toshinori2020fusion2urdf,
     author = {Toshinori Kitamura},
     title = {Fusion2URDF},
