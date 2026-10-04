@@ -66,9 +66,13 @@ def run(context):
         if msg != success_msg:
             ui.messageBox(msg, title)
             return 0
-        elif not 'base_link' in inertial_dict:
-            msg = 'There is no base_link. Please set base_link and run again.'
-            ui.messageBox(msg, title)
+        elif 'base_link' not in inertial_dict:
+            ui.messageBox(
+                "base_link NOT FOUND.\n\n"
+                "Components found in inertial_dict:\n\n" +
+                "\n".join(inertial_dict.keys()),
+                title
+            )
             return 0
         
         links_xyz_dict = {}
@@ -90,7 +94,7 @@ def run(context):
         utils.update_package_xml(save_dir, package_name)
 
         # Generate STl files        
-        utils.copy_occs(root)
+        # utils.copy_occs(root)
         utils.export_stl(design, save_dir, components)   
         
         ui.messageBox(msg, title)
