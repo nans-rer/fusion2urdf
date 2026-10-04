@@ -1,116 +1,144 @@
 # URDF Exporter para Fusion 360
 
-Este es un **fork** del repositorio original: https://github.com/syuntoku14/fusion2urdf
+Este proyecto es un **fork** del repositorio original: [syuntoku14/fusion2urdf](https://github.com/syuntoku14/fusion2urdf). Incluye soporte para versiones recientes de Fusion 360, scripts para la preparación de modelos hacia **MuJoCo** y directrices detalladas de diseño.
 
-## **Cambios realizados**
+## ¿Qué hace este script?
 
-* **Compatibilidad con Fusion 2705.1.25** Se arreglaron problemas de exportación relacionados con cambios realizados a la generación de nombres en Fusion.
+Permite exportar modelos mecánicos directamente desde Autodesk Fusion 360 generando:
 
-## **Notas**
+* Un archivo `.urdf` del modelo cinemático.
 
-* El script está actualizado para utilizarse con **Python 3.12** y superiores.
+* Mallas `.stl` correspondientes a cada link.
 
----
+* Archivos `.launch` y `.yaml` para simulación en Gazebo / ROS.
 
-# Instalación
+## Reglas de diseño y preparación en Fusion 360
 
-Ejecuta el siguiente comando en tu terminal.
+### 1. Jerarquía de componentes
+
+* **Cada link debe ser un componente independiente que contenga únicamente cuerpos (`bodies`).**
+
+* **NO se admiten componentes anidados ni subensambles.** Si se diseña un link agrupando piezas (por ejemplo, estructura + servomotores), se debe combinar los cuerpos o consolidarlos en un único componente sin subcomponentes internos antes de ensamblar.
+
+
+### 2. Nomenclatura
+
+* La link base del robot debe llamarse **`base_link`**.
+
+* Los links sucesivos deben nombrarse secuencialmente: **`link1`**, **`link2`**, ..., **`linkN`**.
+
+### 3. Definición de uniones
+
+* **Tipos admitidos:** Únicamente **Rígida (Rigid)**, **Revolución (Revolute)** y **Corredera (Slider)**.
+
+* **Regla Padre-Hijo:**
+
+  * `Component1` = **Link hijo** (`link[n+1]`)
+
+  * `Component2` = **Link padre** (`link[n]`)
+
+* **Sin acentos ni caracteres especiales:** El exportador no procesa tildes. Dado que Fusion en español suele nombrar las uniones como *"Revolución"*, se puede:
+
+  * Cambiar el idioma de Fusion 360 a inglés, o bien
+
+  * Renombrar manualmente cada unión en el navegador para quitar la tilde (ej. `Revolucion 1`).
+
+### 4. Orientación y bloqueos
+
+* **Eje Z hacia arriba:** Se debe verificar que el modelo esté correctamente orientado con el eje Z vertical (se puede añadir una restricción de alineación entre la base y el plano XY).
+
+* **Sin componentes bloqueados:** Se debe verificar que ningún componente esté fijado o bloqueado al momento de exportar.
+
+* **Copia de seguridad:** Se recomienda crear un guardado o duplicado del diseño antes de lanzar el proceso.
+
+A modo de ejemplo, el siguiente ensamble está listo para ser exportado, cumpliendo con todos los requisitos nombrados anteriormente.
+
+<img width="512" height="462" alt="robot_ejemplo" src="https://github.com/user-attachments/assets/4a116798-e1a8-4eb1-959e-90ec795673b5" />
+
+## Instalación
+
+Clona este repositorio o descarga su contenido:
+
+```
+git clone https://github.com/nans-rer/fusion2urdf.git
+
+```
+
+Copia la carpeta `URDF_Exporter` al directorio de scripts de Fusion 360 según tu sistema operativo:
 
 ### Windows (PowerShell)
 
-```powershell
-cd <path to fusion2urdf>
+```
+cd <ruta_hacia_fusion2urdf>
 Copy-Item ".\URDF_Exporter\" -Destination "${env:APPDATA}\Autodesk\Autodesk Fusion 360\API\Scripts\" -Recurse
+
 ```
 
-### macOS (Bash o Zsh)
+### macOS (Terminal)
 
-```bash
-cd <path to fusion2urdf>
+```
+cd <ruta_hacia_fusion2urdf>
 cp -r ./URDF_Exporter "$HOME/Library/Application Support/Autodesk/Autodesk Fusion 360/API/Scripts/"
+
 ```
 
----
+## Flujo de Exportación
 
-# ¿Qué es este script?
+1. En Fusion 360, abre el modelo preparado.
 
-Este es un script para Fusion 360 que permite exportar directamente un modelo de Fusion 360 a URDF.
+2. Dirígete a la barra superior: **Utilidades** $\rightarrow$ **Complementos** $\rightarrow$ **Secuencias de comandos y complementos** (o presiona `Shift + S`).
 
-El script exporta:
+3. En la pestaña *Secuencias de comandos*, localiza **URDF_Exporter** y haz clic en **Ejecutar**.
 
-* Un archivo `.urdf` del modelo.
-* Archivos `.launch` y `.yaml` para simular el robot en Gazebo.
-* Archivos `.stl` del modelo.
+4. Selecciona la carpeta destino donde se generará la carpeta con terminación `_description`.
 
-## Ejemplo
 
-El siguiente modelo de prueba no queda orientado verticalmente porque el eje Z no está orientado hacia arriba en Fusion 360 de forma predeterminada.
+<img width="600" alt="complementos" src="https://github.com/user-attachments/assets/fc1f1b98-00d2-41ec-9c29-14c0c147308c" />
+<img width="600" alt="complementos2" src="https://github.com/user-attachments/assets/52ca8915-8bf5-4724-96e2-c47e22c8820c" />
 
-Es necesario que el robot quede correctamente orientado, asegúrate de que el eje Z esté orientado hacia arriba en tu modelo de Fusion 360.
+## Simulación en MuJoCo
 
-### Modelo original
+Para procesar el URDF resultante y visualizarlo en el entorno de simulación de MuJoCo:
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/industrial_robot.png" alt="industrial_robot" title="industrial_robot" width="300" height="300">
+### 1. Preparar el entorno virtual
 
-### Simulación en Gazebo del `.urdf` y `.launch` exportados
+En la raíz de este proyecto se encuentra un convertidor de URDF a MuJoCo. Se debe abrir la carpeta una terminal (se puede usar VSCode) y abrir la carpeta del convertidor. Una vez dentro se ejecuta el siguiente codigo:
 
-* Centro de masa.
-  
-  <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/center_of_mass.png" alt="center_of_mass" title="center_of_mass" width="300" height="300">
-
-* Colisiones.
-  
-  <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/collision.png" alt="collision" title="collision" width="300" height="300">
-
-* Inercia.
-  
-  <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/inertia.png" alt="inertia" title="inertia" width="300" height="300">
-
----
-
-# Antes de utilizar este script
-
-Antes de utilizar este script, asegúrate de que todos los **"links" estén definidos como componentes**.
-
-Debes definir los links creando los componentes correspondientes. Por ejemplo, el modelo de [SpotMini](https://grabcad.com/library/spotmini-robot-1) no es compatible a menos que definas el `base_link`.
-
-Además, debes tener cuidado al definir los joints.
-
-Los **links padre (`parent links`) deben configurarse como `Component2` al definir el joint, y no como `Component1`**.
-
-Por ejemplo, si defines `base_link` como `Component1` al crear los joints, aparecerá un error como:
-
-```text
-KeyError: base_link__1
 ```
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/spot_mini.PNG" alt="spot_mini" title="spot_mini" width="300" height="300">
+# 1.- Crear entorno virtual con Python 3.12+
+python -m venv venv
 
-También asegúrate de que los componentes de tu modelo contengan **únicamente cuerpos (`bodies`)**.
+# 2.- Activar entorno (Windows)
+.\venv\Scripts\activate
+# En Linux/macOS usar: source venv/bin/activate
 
-Los **componentes anidados (`Nested components`) no son compatibles**.
+# 3.- Instalar dependencias
+python -m pip install -r requirements.txt
 
-### Esto funciona:
+```
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/only_bodies.PNG" alt="only_bodies" title="only_bodies" width="300" height="300">
+### 2. Procesar y cargar el modelo
 
-### Esto no funciona: Pues `"face (3):1"` contiene otros componentes, no funcionará.
+1. Copia la carpeta generada por el exportador URDF (ej. `robot_description`) dentro de la raíz de este proyecto.
 
-<img src="https://github.com/syuntoku14/fusion2urdf/blob/images/nest_components.PNG" alt="nest_components" title="nest_components" width="300" height="300">
+2. Convierte el URDF a formato MuJoCo XML:
 
-**Cada componente debe contener únicamente cuerpos.**
+   ```
+   python preparar_urdf_mujoco.py
+   ```
 
-En algunas ocasiones, este script puede generar un URDF anormal sin mostrar ningún mensaje de error.
+3. Al finalizar, la consola mostrará la ruta del archivo `.xml` generado.
 
-En ese caso, probablemente exista un problema con los joints. Vuelve a definir los joints y ejecuta nuevamente el script.
+4. Carga la escena interactiva ejecutando:
 
-Además, ten en cuenta que actualmente este script solo admite los siguientes tipos de joint: “Rígida”, “Revolución” y “Corredera”. 
+   ```
+   python cargar_escena.py ruta/hacia/el/archivo_generado.xml
+   
+   ```
 
+## Cita
 
----
-
-# Cita
-
-```text
+```
 @misc{toshinori2020fusion2urdf,
     author = {Toshinori Kitamura},
     title = {Fusion2URDF},
@@ -119,4 +147,5 @@ Además, ten en cuenta que actualmente este script solo admite los siguientes ti
     journal = {GitHub repository},
     howpublished = {\url{https://github.com/syuntoku14/fusion2urdf}}
 }
+
 ```
