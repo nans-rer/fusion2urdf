@@ -55,10 +55,15 @@ Es necesario que el robot quede correctamente orientado, asegúrate de que el ej
 ### Simulación en Gazebo del `.urdf` y `.launch` exportados
 
 * Centro de masa.
+  
   <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/center_of_mass.png" alt="center_of_mass" title="center_of_mass" width="300" height="300">
+
 * Colisiones.
+  
   <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/collision.png" alt="collision" title="collision" width="300" height="300">
+
 * Inercia.
+  
   <img src="https://github.com/syuntoku14/fusion2urdf/blob/images/inertia.png" alt="inertia" title="inertia" width="300" height="300">
 
 ---
